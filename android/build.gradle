@@ -1,0 +1,27 @@
+buildscript {
+    ext.kotlin_version = '1.7.0' // Update to your desired Kotlin version
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.4' // Adjust this if needed
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
