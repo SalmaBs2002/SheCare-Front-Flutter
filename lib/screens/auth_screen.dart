@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart'; // Import the LoginScreen
-import 'sign_up/sign_up_screen.dart'; // Import the SignUpScreen
+import 'sign_up/sign_up_step1.dart'; // Import the SignUpStep1
 
 class AuthScreen extends StatelessWidget {
   @override
@@ -24,7 +24,7 @@ class AuthScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SignUpScreen()),
+                  MaterialPageRoute(builder: (context) => SignUpStep1()), // Navigate to SignUpStep1
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -47,7 +47,7 @@ class AuthScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  MaterialPageRoute(builder: (context) => LoginScreen()), // Navigate to LoginScreen
                 );
               },
               style: ElevatedButton.styleFrom(

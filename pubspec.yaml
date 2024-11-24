@@ -32,18 +32,24 @@ dependencies:
     sdk: flutter
   http: ^1.2.2
   url_launcher: ^6.0.20
-  image_picker: ^0.8.6
+  image_picker: ^1.1.2
+  image: ^4.3.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  tflite_flutter: ^0.11.0
+ # tflite_flutter: ^0.11.0
+  tflite: ^1.1.2
+  flutter_datetime_picker: ^1.5.1
+  table_calendar: ^3.0.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   carousel_slider: ^5.0.0
   url_launcher: ^6.0.20
+  video_player: ^2.5.0
+  audioplayers: ^6.1.0
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -81,6 +87,21 @@ flutter:
     - assets/article3.png
     - assets/model_unquant.tflite
     - assets/labels.txt
+    - assets/back_crop.png
+    - assets/ex_pic.png
+    - assets/videos/step1.mp4
+    - assets/videos/step2.mp4
+    - assets/videos/step3.mp4
+    - assets/videos/step4.mp4
+    - assets/videos/step5.mp4
+    - assets/videos/step6.mp4
+    - assets/videos/sound.mp3
+    - assets/story1.jpg
+    - assets/story2.jpg
+    - assets/story3.jpg
+    - assets/step_image.png
+    
+
   # fonts:
   #   - family: Schyler
   #     fonts:

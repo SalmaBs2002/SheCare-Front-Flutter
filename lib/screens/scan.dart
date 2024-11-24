@@ -1,14 +1,12 @@
-// Import the necessary packages
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:math';
+import 'custom_navigation_bar.dart'; // Import your custom navigation bar
 
-// Assume we have a classification function (to be implemented later)
 Future<String> classifyImage(File image) async {
-  // TODO: Add your model classification logic here
-  // For now, just returning a dummy result.
-  await Future.delayed(Duration(seconds: 1)); // Simulate some processing time
-  return "Classification Result: Sample Result"; // Replace with actual result
+  await Future.delayed(Duration(seconds: 2)); // Simulate some processing time
+  return Random().nextBool() ? "Malignant" : "Benign"; 
 }
 
 class ImageScanPage extends StatefulWidget {
@@ -20,29 +18,47 @@ class ImageScanPage extends StatefulWidget {
 
 class _ImageScanPageState extends State<ImageScanPage> {
   File? _image;
-  String? _classificationResult; // Variable to hold the classification result
+  String? _classificationResult;
   bool _showResultContainer = false;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
-        _showResultContainer = false; // Reset result display when new image is picked
+        _showResultContainer = false;
+        _classificationResult = null;
+        _errorMessage = null;
       });
     }
   }
 
   Future<void> _scanImage() async {
-    if (_image != null) {
-      String result = await classifyImage(_image!); // Classify the picked image
+    if (_image == null) {
       setState(() {
-        _classificationResult = result; // Store the classification result
-        _showResultContainer = true; // Show result container
+        _errorMessage = 'You must upload a picture';
       });
+      return;
     }
+
+    setState(() {
+      _isLoading = true;
+      _classificationResult = null;
+    });
+
+    String result = await classifyImage(_image!);
+
+    await Future.delayed(Duration(seconds: 1));
+
+    setState(() {
+      _classificationResult = result;
+      _showResultContainer = true;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -50,6 +66,14 @@ class _ImageScanPageState extends State<ImageScanPage> {
     return Scaffold(
       body: Stack(
         children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/home_page.png',
+              fit: BoxFit.cover, // Ensure the image covers the entire screen
+            ),
+          ),
+          // Foreground Content
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -73,37 +97,53 @@ class _ImageScanPageState extends State<ImageScanPage> {
                   child: GestureDetector(
                     onTap: _pickImage,
                     child: Center(
-                      child: Image.asset(
-                        'assets/scan_logo.png',
-                        width: 50,
-                        height: 50,
-                      ),
+                      child: _image != null
+                          ? Image.file(
+                              _image!,
+                              width: 220,
+                              height: 230,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              'assets/scan_logo.png',
+                              width: 50,
+                              height: 50,
+                            ),
                     ),
                   ),
                 ),
                 SizedBox(height: 30),
-                if (!_showResultContainer)
-                  ElevatedButton(
-                    onPressed: _scanImage,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFFB6F92),
-                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                    ),
-                    child: Text(
-                      'Scan',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
+                if (_errorMessage != null)
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red, fontSize: 16),
                   ),
-                if (_image != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: Image.file(
-                      _image!,
-                      width: 250,
-                      height: 250,
-                      fit: BoxFit.cover,
-                    ),
+                ElevatedButton(
+                  onPressed: _scanImage,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFFB6F92),
+                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   ),
+                  child: _isLoading
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Analyzing the image...',
+                              style: TextStyle(color: Colors.white, fontSize: 18),
+                            ),
+                          ],
+                        )
+                      : Text(
+                          'Scan',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                ),
                 if (_showResultContainer)
                   Column(
                     children: [
@@ -139,7 +179,7 @@ class _ImageScanPageState extends State<ImageScanPage> {
                         ),
                         child: Center(
                           child: Text(
-                            _classificationResult ?? 'Votre résultat ici', // Display result or default message
+                            _classificationResult ?? 'Votre résultat ici',
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 14,
@@ -157,7 +197,7 @@ class _ImageScanPageState extends State<ImageScanPage> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: buildBottomNavBar(context),
+            child: CustomNavigationBar(),
           ),
           Positioned(
             bottom: 15,
@@ -168,93 +208,12 @@ class _ImageScanPageState extends State<ImageScanPage> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Color(0xFFFB6F92),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
               ),
               child: IconButton(
                 icon: Icon(Icons.camera_alt, color: Colors.white),
-                onPressed: _pickImage, // Trigger image picking when pressed
+                onPressed: _pickImage,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Method to build navigation items
-  Widget _buildNavItem(String iconPath, String label, {double iconSize = 24}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Image.asset(
-          iconPath,
-          height: iconSize,
-          width: iconSize,
-        ),
-        SizedBox(height: 3),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Color(0xFFFB6F92)),
-        ),
-      ],
-    );
-  }
-
-  // Bottom Navigation Bar function
-  Widget buildBottomNavBar(BuildContext context) {
-    final List<String> navIcons = [
-      'assets/home_logo.png',
-      'assets/calendar_logo.png',
-      'assets/exercise_logo.png',
-      'assets/profile_logo.png',
-    ];
-
-    final List<String> navLabels = [
-      'Home',
-      'Calendar',
-      'Exercise',
-      'Profile',
-    ];
-
-    return Container(
-      color: Colors.white,
-      height: 60,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/home');
-            },
-            child: _buildNavItem(navIcons[0], navLabels[0]),
-          ),
-          SizedBox(width: 40),
-          GestureDetector(
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/calendar');
-            },
-            child: _buildNavItem(navIcons[1], navLabels[1], iconSize: 30),
-          ),
-          SizedBox(width: 50),
-          GestureDetector(
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/settings');
-            },
-            child: _buildNavItem(navIcons[2], navLabels[2]),
-          ),
-          SizedBox(width: 40),
-          GestureDetector(
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/profile');
-            },
-            child: _buildNavItem(navIcons[3], navLabels[3]),
           ),
         ],
       ),
